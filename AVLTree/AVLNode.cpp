@@ -1,13 +1,13 @@
 #pragma once
-#include <memory>
 #include "AVLNode.h"
 
+#ifndef AVLNODE_IMPL__
+#define AVLNODE_IMPL__
+
 using namespace std;
-using namespace AVL;
 
-
-template <typename V, class T>
-Node<V, T>::Node(Node<V, T>* p, T* v, V k) : left(nullptr), right(nullptr), parent(p), value(v), key(k) {}
+template <class V, class T>
+Node<V, T>::Node(Node<V, T>* p, const T* v, V k) : left(nullptr), right(nullptr), parent(p), value(v), key(k) {}
 
 template <typename V, class T>
 char Node<V, T>::bfactor() const {
@@ -20,3 +20,5 @@ void Node<V, T>::updateHeight() {
 	unsigned char hr = (right ? right->height : 0);
 	height = (hl > hr ? hl : hr) + 1;
 }
+
+#endif
