@@ -112,13 +112,11 @@ void AVLTree<V, T>::switchparent(Node<V, T>* node, Node<V, T>* node2) {
 		if (node->parent->left == node) {
 			node->parent->left = node2;
 			node2->parent = node->parent;
-		}
-		else {
+		} else {
 			node->parent->right = node2;
 			node2->parent = node->parent;
 		}
-	}
-	else {
+	} else {
 		head = node2;
 		head->parent = nullptr;
 	}
@@ -151,21 +149,16 @@ void AVLTree<V, T>::balance(Node<V, T>* node) {
 	while (node) {
 		node->updateHeight();
 		auto bf = node->bfactor();
-		cout << "BALANCE " << (int)bf << "/" << (int)node->height << endl;
 		if (bf == -2) {
 			if (node->left->bfactor() > 0) {
-				cout << "LR" << endl;
 				rotateleftright(node);
 			} else {
-				cout << "R" << endl;
 				rotateright(node);
 			}
 		} else if (bf == 2) {
 			if (node->right->bfactor() < 0) {
-				cout << "RL" << endl;
 				rotaterightleft(node);
 			} else {
-				cout << "L" << endl;
 				rotateleft(node);
 			}
 		}
@@ -174,8 +167,8 @@ void AVLTree<V, T>::balance(Node<V, T>* node) {
 }
 
 template <class V, class T>
-void AVLTree<V, T>::insert(const V key, const T* value) {
-	auto node = new Node<V, T>(nullptr, value, key);
+void AVLTree<V, T>::insert(V key, T value) {
+	auto node = new Node<V, T>(nullptr, move(value), key);
 	if (!head) {
 		head = node;
 		return;
@@ -205,100 +198,57 @@ void AVLTree<V, T>::insert(const V key, const T* value) {
 }
 
 template <class V, class T>
-void AVLTree<V, T>::remove_node(Node<V, T>* node) {
+void AVLTree<V, T>::swap(Node<V, T>* node1, Node<V, T>* node2) {
+	node1->value = move(node2->value);
+	node1->key = node2->key;
+}
+
+template <class V, class T>
+void AVLTree<V, T>::remove(V key) {
+	auto node = get_node(key);
 	if (!node) {
 		return;
 	}
-	bool fromright = node->parent ? node->parent->right == node : false;
 	if (!node->right) {
 		if (node->left) {
-			node->value = node->left->value;
-			node->key = node->left->key;
+			swap(node, node->left);
 			delete node->left;
 			node->left = nullptr;
 			balance(node);
 		} else {
-			if (fromright) {
-				node->parent->right = nullptr;
+			auto p = node->parent;
+			if (p->right == node) {
+				p->right = nullptr;
 			} else {
-				node->parent->left = nullptr;
+				p->left = nullptr;
 			}
-			balance(node->parent);
 			delete node;
+			balance(p);
 		}
 	} else {
 		auto repln = get_min(node->right);
-		n->value = repln->value;
-		node->key = repln->key;
-		remove(repln);
-		balance(repln);
-	}
-	if (node->left && node->right) {
-		auto repln = get_min(node->right);
-		n->value = repln->value;
-		node->key = repln->key;
-		remove(repln);
-		balance(repln);
-	} else {
-		
-		if (node->left) {
-			if (fromright) {
-				if (node->parent) {
-					node->parent->right = node->left;
-				} else {
-					head = node->left;
-				}
-			} else {
-				if (node->parent) {
-					node->parent->left = node->left;
-				} else {
-					head = node->left;
-				}
-			}
-			node->left->parent = node->parent;
-			node->left->updateHeight();
-			//balance(node->left);
-		} else if (node->right) {
-			if (fromright) {
-				if (node->parent) {
-					node->parent->right = node->right;
-				} else {
-					head = node->right;
-				}
-			} else {
-				if (node->parent) {
-					node->parent->left = node->right;
-				} else {
-					head = node->right;
-				}
-			}
-			node->right->parent = node->parent;
-			node->right->updateHeight();
-			//balance(node->right);
-		} else if (node->parent) {
-			if (fromright) {
-				node->parent->right = nullptr;
-			} else {
-				node->parent->left = nullptr;
-			}
-			//balance(n->parent);
+		swap(node, repln);
+		if (repln->right) {
+			swap(repln, repln->right);
+			delete repln->right;
+			repln->right = nullptr;
+			balance(repln);
 		} else {
-			head = nullptr;
+			auto p = repln->parent;
+			if (p->right == repln) {
+				p->right = nullptr;
+			} else {
+				p->left = nullptr;
+			}
+			delete repln;
+			balance(p);
 		}
-		node->left = nullptr;
-		node->right = nullptr;
-		node->parent = nullptr;
-		delete node;
+		
 	}
 }
 
 template <class V, class T>
-void AVLTree<V, T>::remove(const V key) {
-	remove_node(get_node(key));
-}
-
-template <class V, class T>
-Node<V, T>* AVLTree<V, T>::get_node(const V key) const {
+Node<V, T>* AVLTree<V, T>::get_node(V key) const {
 	auto n = head;
 	while (n) {
 		if (n->key == key) {
@@ -313,7 +263,7 @@ Node<V, T>* AVLTree<V, T>::get_node(const V key) const {
 }
 
 template <class V, class T>
-T* AVLTree<V, T>::get(const V key) const {
+T AVLTree<V, T>::get(V key) const {
 	auto n = get_node(key);
 	if (n) {
 		return n->value;

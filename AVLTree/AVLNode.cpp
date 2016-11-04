@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "AVLNode.h"
 
 #ifndef AVLNODE_IMPL__
@@ -7,7 +8,7 @@
 using namespace std;
 
 template <class V, class T>
-Node<V, T>::Node(Node<V, T>* p, const T* v, V k) : left(nullptr), right(nullptr), parent(p), value(v), key(k) {}
+Node<V, T>::Node(Node<V, T>* p, T v, V k) : left(nullptr), right(nullptr), parent(p), value(move(v)), key(k) {}
 
 template <typename V, class T>
 char Node<V, T>::bfactor() const {
